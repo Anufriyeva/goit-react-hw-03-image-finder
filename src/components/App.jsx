@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
 import Service from 'Service/Service';
+import Searchbar from './Searchbar/Searchbar';
+import {
+  StyledAppContainer,
+  StyledImageList,
+} from './App.styled';
 
 class App extends Component {
   state = {
@@ -12,10 +17,7 @@ class App extends Component {
     this.setState({ searchQuery: e.target.value });
   };
 
-  handleSubmit = async (e) => {
-    e.preventDefault();
-    const { searchQuery } = this.state;
-    
+  handleSubmit = async (searchQuery) => { 
     try {
       const images = await Service.fetchImages(searchQuery);
       this.setState({ images, page: 1 });
@@ -28,25 +30,16 @@ class App extends Component {
     const { searchQuery, images } = this.state;
 
     return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            type="text"
-            placeholder="Search for images"
-            value={searchQuery}
-            onChange={this.handleInputChange}
-          />
-          <button type="submit">Search</button>
-        </form>
-
-        <div className="image-list">
+      <StyledAppContainer>
+        <Searchbar onSubmit={this.handleSubmit} /> 
+        <StyledImageList>
           {images.map((image) => (
             <div key={image.id}>
               <img src={image.webformatURL} alt="" />
             </div>
           ))}
-        </div>
-      </div>
+        </StyledImageList>
+      </StyledAppContainer>
     );
   }
 }
