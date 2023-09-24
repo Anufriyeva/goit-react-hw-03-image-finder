@@ -6,7 +6,8 @@ const ImageGallery = ({ hits, onClick }) => (
   <ImageGalleryContainer>
       {hits.map(({ id, webformatURL, largeImageURL, tags }) => (
         <ImageGalleryItem
-          key={id}
+              key={id}
+              id={id}
           webformatURL={webformatURL}
           largeImageURL={largeImageURL}
           alt={tags}

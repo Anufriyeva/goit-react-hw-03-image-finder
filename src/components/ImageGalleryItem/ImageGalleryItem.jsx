@@ -4,6 +4,8 @@ import { GalleryImage, GalleryItemWrapper } from "./ImageGalleryItem.styled";
 class ImageGalleryItem extends Component {
   handleClick = () => {
     const { largeImageURL, tags, onClick } = this.props;
+    console.log('largeImageURL:', largeImageURL);
+    console.log('tags:', tags);
     onClick({ largeImageURL, tags });
   };
 

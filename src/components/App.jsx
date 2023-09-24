@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import Service from 'Service/Service';
+import Service from '../Service/Service';
 import Searchbar from './Searchbar/Searchbar';
+import ImageGallery from './ImageGallery/ImageGallery';
+import Modal from './Modal/Modal';
 import {
   StyledAppContainer,
   StyledImageList,
@@ -11,13 +13,15 @@ class App extends Component {
     searchQuery: '',
     images: [],
     page: 1,
+    isModalOpen: false, 
+    selectedImage: null, 
   };
 
   handleInputChange = (e) => {
     this.setState({ searchQuery: e.target.value });
   };
 
-  handleSubmit = async (searchQuery) => { 
+  handleSubmit = async (searchQuery) => {
     try {
       const images = await Service.fetchImages(searchQuery);
       this.setState({ images, page: 1 });
@@ -26,19 +30,43 @@ class App extends Component {
     }
   };
 
+  openModal = (imageUrl) => {
+    this.setState({ isModalOpen: true, selectedImage: imageUrl });
+  };
+
+  closeModal = () => {
+    this.setState({ isModalOpen: false, selectedImage: null });
+  };
+
   render() {
-    const { searchQuery, images } = this.state;
+    const { images, isModalOpen, selectedImage } = this.state;
 
     return (
       <StyledAppContainer>
-        <Searchbar onSubmit={this.handleSubmit} /> 
+        <Searchbar onSubmit={this.handleSubmit} />
         <StyledImageList>
           {images.map((image) => (
-            <div key={image.id}>
+            <div key={image.id} onClick={() => this.openModal(image.largeImageURL)}>
               <img src={image.webformatURL} alt="" />
             </div>
           ))}
         </StyledImageList>
+
+        {isModalOpen && (
+          <Modal
+            isOpen={isModalOpen}
+            imageUrl={selectedImage}
+            alt="Image"
+            onClose={this.closeModal}
+          />
+        )}
+
+        {images.length > 0 && (
+          <ImageGallery
+            hits={images}
+            onClick={(imageUrl) => this.openModal(imageUrl)}
+          />
+        )}
       </StyledAppContainer>
     );
   }
