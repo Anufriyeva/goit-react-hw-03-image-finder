@@ -4,8 +4,6 @@ import { GalleryImage, GalleryItemWrapper } from "./ImageGalleryItem.styled";
 class ImageGalleryItem extends Component {
   handleClick = () => {
     const { largeImageURL, tags, onClick } = this.props;
-    console.log('largeImageURL:', largeImageURL);
-    console.log('tags:', tags);
     onClick({ largeImageURL, tags });
   };
 
@@ -13,11 +11,10 @@ class ImageGalleryItem extends Component {
     const { webformatURL, tags } = this.props;
 
     return (
-      <GalleryItemWrapper>
+      <GalleryItemWrapper onClick={this.handleClick}>
         <GalleryImage
           src={webformatURL}
-          alt={tags}
-          onClick={this.handleClick}
+          alt={tags}          
         />
       </GalleryItemWrapper>
     );

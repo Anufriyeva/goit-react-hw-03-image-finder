@@ -4,10 +4,10 @@ import { disablePageScroll, enablePageScroll } from 'scroll-lock';
 
 class Modal extends Component {
 
-    componentDidMount() {
-        window.addEventListener('keydown', this.handleKeyDown);
-        disablePageScroll();
-    }
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+    disablePageScroll();
+  }
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);

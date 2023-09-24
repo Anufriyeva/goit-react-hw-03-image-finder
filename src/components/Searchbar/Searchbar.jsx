@@ -37,8 +37,9 @@ class Searchbar extends Component {
             placeholder="Search images and photos"
             onChange={this.handleInputQuery}
             value={this.state.inputQuery}
-                />
-                <StyledSearchButton type="submit">Search</StyledSearchButton>
+            />
+          
+          <StyledSearchButton type="submit">Search</StyledSearchButton>
                 
         </StyledSearchForm>
       </StyledSearchbar>
