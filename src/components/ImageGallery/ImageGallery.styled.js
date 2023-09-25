@@ -6,5 +6,5 @@ export const ImageGalleryContainer = styled.ul`
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  gap: 20px;
 `;

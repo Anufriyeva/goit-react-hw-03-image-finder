@@ -8,6 +8,8 @@ export const GalleryItemWrapper = styled.li`
 
 export const GalleryImage = styled.img`
   width: 100%;
-  height: auto;
+  height: 300px;
   cursor: pointer;
+  object-fit: cover;
+  border-radius: 3px;
 `;

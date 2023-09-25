@@ -7,7 +7,7 @@ const Loader = () => {
     <SpinnerWrapper>
       <Circles
         // type="Circles"
-        color="#4fa94d"
+        color="#df3b01"
         height={80}
         width={80}
         timeout={3000}
