@@ -1,89 +1,138 @@
 import React, { Component } from 'react';
-import Service from '../Service/Service';
+import {fetchImages} from '../Service/Service';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Modal from './Modal/Modal';
 import Button from './Button/Button';
+import Loader from './Loader/Loader';
 import {
   StyledAppContainer,
   // StyledImageList,
 } from './App.styled';
+
+const ITEMS_PER_PAGE = 12;
 
 class App extends Component {
   state = {
   searchQuery: '',
   images: [],
   page: 1,
+  quantityPage: null,
   isModalOpen: false,
+  isLoading: false,
   largeImageURL: null,
+  error: null,
   tags: null,
-  perPage: 12,
 };
+  
+componentDidUpdate(_, prevState) {
+    const { page, searchQuery } = this.state;
 
-  handleInputChange = (e) => {
-    this.setState({ searchQuery: e.target.value });
-  };
+    if (
+      page !== prevState.page ||
+      searchQuery !== prevState.searchQuery
+    ) {
+      this.handleSubmit();
+    }
+  }
 
-  // handleSubmit = async (searchQuery) => {
-  //   try {
-  //     const images = await Service.fetchImages(searchQuery);
-  //     this.setState({ images, page: 1 });
-  //   } catch (error) {
-  //     console.error('Error fetching images:', error);
-  //   }
+  // handleInputChange = (e) => {
+  //   this.setState({ searchQuery: e.target.value });
   // };
 
-  handleSubmit = async (searchQuery) => {
-  try {
-    const images = await Service.fetchImages(searchQuery);
-    const slicedImages = images.slice(0, this.state.perPage); // Обрізати до першого perPage елементів
-    this.setState({ images: slicedImages, page: 1 });
-  } catch (error) {
-    console.error('Error fetching images:', error);
-  }
-};
 
-  openModal = (largeImageURL, tags) => {
-    this.setState({ isModalOpen: true, largeImageURL, tags });
+  handleSubmit = async () => {
+    const { searchQuery, page } = this.state;
+
+    this.setLoadingState(true);
+    
+    try {
+      const { hits, totalHits } = await fetchImages(searchQuery, page);
+    
+    if (hits.length === 0) {
+      window.alert('Error fetching images');
+      return;
+    }
+      
+    this.updateImages(hits, totalHits);
+    } catch (err) {
+      this.setState({ error: err.message });
+    } finally {
+      this.setLoadingState(false);
+    }
   };
+  
+  setLoadingState = isLoading => {
+    this.setState({ isLoading });
+  };
+
+  updateImages = (hits, totalHits) => {
+    this.setState(prev => ({
+      images: [...prev.images, ...hits],
+      quantityPage: Math.ceil(totalHits / ITEMS_PER_PAGE),
+    }));
+  };
+
+  handleSubmitSearch = searchQuery => {
+  this.resetImages();
+  this.setState({ searchQuery });
+  };
+
+  resetImages = () => {
+    this.setState({
+      page: 1,
+      quantityPage: null,
+      images: [],
+      error: null,
+    });
+  };
+
+
+
+  openModal = (data) => {
+    this.setLoadingState(true);
+    this.setState({ isModalOpen: true, ...data });
+  };  
 
   closeModal = () => {
-    this.setState({ isModalOpen: false, largeImageURL: null, tags: null });
+    this.setLoadingState(false);
+    this.setState({ isModalOpen: false });
   };
 
-  // loadMoreImages = async () => {
-  //   const { searchQuery, page } = this.state;
-  //   try {
-  //     const newImages = await Service.fetchImages(searchQuery, page + 1);
-  //     this.setState((prevState) => ({
-  //       images: [...prevState.images, ...newImages],
-  //       page: prevState.page + 1,
-  //     }));
-  //   } catch (error) {
-  //     console.error('Error fetching more images:', error);
-  //   }
-  // };
+  loadMoreImages = () => {
+    this.setState(prev => ({ page: prev.page + 1 }));
+  };
+  
 
-  loadMoreImages = async () => {
-  const { searchQuery, page, perPage } = this.state;
-  try {
-    const newImages = await Service.fetchImages(searchQuery, page + 1);
-    this.setState((prevState) => ({
-      images: [...prevState.images, ...newImages.slice(0, perPage)], 
-      page: prevState.page + 1,
-    }));
-  } catch (error) {
-    console.error('Error fetching more images:', error);
-  }
-};
+//   loadMoreImages = async () => {
+//   const { searchQuery, page, perPage } = this.state;
+//   try {
+//     const newImages = await fetchImages(searchQuery, page + 1);
+//     this.setState((prevState) => ({
+//       images: [...prevState.images, ...newImages.slice(0, perPage)], 
+//       page: prevState.page + 1,
+//     }));
+//   } catch (error) {
+//     console.error('Error fetching more images:', error);
+//   }
+// };
 
   render() {
-    const { searchQuery, images, isModalOpen, largeImageURL, tags } = this.state;
+    const {
+      images,
+      page,
+      quantityPage,
+      isLoading,
+      isModalOpen,
+      largeImageURL,
+      tags,
+      error
+    } = this.state;
 
 
     return (
       <StyledAppContainer>
-        <Searchbar onSubmit={this.handleSubmit} />
+        <Searchbar onSubmit={this.handleSubmitSearch} />
         {/* <StyledImageList>
           {images.map((image) => (
             <div key={image.id} onClick={() => this.openModal(image.largeImageURL)}>
@@ -92,29 +141,32 @@ class App extends Component {
           ))}
         </StyledImageList> */}
 
-        {isModalOpen && (
-          <Modal
-            isOpen={isModalOpen}
-            largeImageURL={largeImageURL}
-            alt={tags}
-            onClose={this.closeModal}
-          />
-        )}        
+        {isLoading && <Loader />}
 
-        {images.length > 0 && (
-          <ImageGallery
-            hits={images}
-            // onClick={(imageUrl, tags) => this.openModal(imageUrl, tags)}
-            onClick={this.openModal}
-          />
-        )}
+        {error ? ( // Перевіряємо, чи є помилка
+        <div className="error-message">{error}</div>
+      ) : (
+        <>
+          {isModalOpen && (
+            <Modal
+              largeImageURL={largeImageURL}
+              tags={tags}
+              closeModal={this.closeModal}
+            />
+          )}
 
-        {images.length > 0 && (
-  <Button
-    onClick={this.loadMoreImages}
-    isHidden={images.length < this.state.perPage}
-  />
-)}
+          {images.length > 0 && (
+            <ImageGallery
+              hits={images}
+              onClick={this.openModal}
+            />
+          )}
+
+          {page < quantityPage && (
+            <Button loadMoreImages={this.loadMoreImages} />
+          )}
+        </>
+      )}
 
       </StyledAppContainer>
     );

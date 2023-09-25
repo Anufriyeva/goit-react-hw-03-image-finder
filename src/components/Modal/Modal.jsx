@@ -1,44 +1,56 @@
-import React, { Component } from 'react';
-import { Overlay, ModalContainer } from '../Modal/Modal.styled';
+import { Component } from "react";
+// import * as basicLightbox from 'basiclightbox';
+// import 'basiclightbox/dist/basicLightbox.min.css';
+import { createPortal } from 'react-dom';
 import { disablePageScroll, enablePageScroll } from 'scroll-lock';
+import { ModalContainer, Overlay } from "./Modal.styled";
 
 class Modal extends Component {
+  state = {
+    modalWindow: null,
+  };
 
   componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-    disablePageScroll();
+    const modalWindow = document.querySelector('#root-modal');
+    document.addEventListener('keydown', this.handleKeyDown);
+    if (modalWindow) {
+      this.setState({ modalWindow });
+      disablePageScroll();
+    }
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-    enablePageScroll(); 
+    document.removeEventListener('keydown', this.handleKeyDown);
+    enablePageScroll();
   }
 
   handleKeyDown = (e) => {
     if (e.key === 'Escape') {
-      this.props.onClose();
+      this.props.closeModal();
     }
   };
 
   handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
-      this.props.onClose();
+      this.props.closeModal();
     }
   };
 
   render() {
-    const { isOpen, largeImageURL, tags } = this.props;
+    const { modalWindow } = this.state;
+    const { largeImageURL, tags } = this.props;
 
-    if (!isOpen) {
+    if (!modalWindow) {
       return null;
     }
 
-    return (
+    return createPortal(
       <Overlay onClick={this.handleOverlayClick}>
         <ModalContainer>
           <img src={largeImageURL} alt={tags} />
         </ModalContainer>
-      </Overlay>
+      </Overlay>,
+      modalWindow
     );
   }
 }
